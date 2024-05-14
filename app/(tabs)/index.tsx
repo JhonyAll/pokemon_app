@@ -1,13 +1,27 @@
 import { Image, StyleSheet, TextInput } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { ScrollView } from 'react-native-gesture-handler';
+import { FlatList, View } from 'react-native';
+import PokemonCard from '@/components/PokemonCard';
+import axios from 'axios'
+
+type pokemonType = {
+  name: string,
+  image: string,
+  type: string[]
+}
 
 export default function HomeScreen() {
   const [search, setSearch] = useState('')
+  const [pokemons, setPokemons] = useState<Array<pokemonType>>([])
+
+  useEffect(() => {
+    axios.get(`http://localhost:3002/pokemon?name=${search}`)
+      .then(response => setPokemons(response.data))
+  }, [search])
 
   return (
     <ParallaxScrollView
@@ -16,7 +30,7 @@ export default function HomeScreen() {
         <Image
           source={require('@/assets/images/partial-react-logo.png')}
           style={styles.reactLogo}
-          
+
         />
       }>
       <ThemedView style={styles.titleContainer}>
@@ -26,6 +40,12 @@ export default function HomeScreen() {
           placeholder='Pokemon...'
           style={styles.input}
         />
+        <View>
+          <FlatList
+            data={pokemons}
+            renderItem={({ item }) => <PokemonCard name={item.name} image={item.image} types={item.type} />}
+          />
+        </View>
       </ThemedView>
     </ParallaxScrollView>
   );
@@ -33,7 +53,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   titleContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     gap: 8,
   },
