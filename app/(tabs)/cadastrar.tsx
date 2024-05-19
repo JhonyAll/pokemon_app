@@ -1,102 +1,182 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Image, Platform } from 'react-native';
+import { StyleSheet, Image, Platform, Text, TextInput, Button, Pressable } from 'react-native';
 
 import { Collapsible } from '@/components/Collapsible';
 import { ExternalLink } from '@/components/ExternalLink';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { View } from 'react-native';
+import { useState } from 'react';
+import * as DocumentPicker from 'expo-document-picker'
+import SectionedMultiSelect from 'react-native-sectioned-multi-select';
+import { MaterialIcons as Icon } from '@expo/vector-icons';
+import { useEffect } from 'react';
+import axios from 'axios';
+
+type typeType =
+  {
+    name: string,
+    id: number
+  }
+
+const types: typeType[] = [
+  { name: 'Elétrico', id: 1 },
+  { name: 'Voador', id: 2 },
+  { name: 'Fogo', id: 3 },
+  { name: 'Água', id: 4 },
+  { name: 'Grama', id: 5 },
+  { name: 'Psíquico', id: 6 },
+  { name: 'Lutador', id: 7 },
+  { name: 'Venenoso', id: 8 },
+  { name: 'Terra', id: 9 },
+  { name: 'Gelo', id: 10 },
+  { name: 'Inseto', id: 11 },
+  { name: 'Fantasma', id: 12 },
+  { name: 'Pedra', id: 13 },
+  { name: 'Aço', id: 14 },
+  { name: 'Noturno', id: 15 },
+  { name: 'Fada', id: 16 },
+  { name: 'Dragão', id: 17 },
+];
 
 export default function TabTwoScreen() {
+  const [name, setName] = useState('')
+  const [image, setImage] = useState('https://th.bing.com/th/id/OIP.irYdn9CAcFUWw7vCSP0CGwHaEK?w=321&h=180&c=7&r=0&o=5&pid=1.7')
+
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [itemsAll, setItemsAll] = useState<string[]>([])
+
+  const uploadFileOnPressHandler = async () => {
+    try {
+      const pickedFile = await DocumentPicker.getDocumentAsync({ type: 'image/*' });
+      if (!pickedFile.canceled) {
+        setImage(pickedFile.assets[0].uri)
+      }
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  const adicionarPokemon = () => {
+    selectedItems.forEach(element => {
+      types.forEach(e => {
+        if (e.id == element) {
+          let i = itemsAll
+          i.push(e.name)
+          setItemsAll(i)
+        }
+      }
+      )
+    })
+
+    const options = {
+      method: 'POST',
+      url: 'http://localhost:3002/pokemon',
+      headers: { 'Content-Type': 'application/json' },
+      data: {
+        name: name,
+        image: image,
+        type: itemsAll
+      }
+    };
+
+    axios.request(options).then(function (response) {
+      console.log(response.data);
+      setSelectedItems([])
+      setImage('https://th.bing.com/th/id/OIP.irYdn9CAcFUWw7vCSP0CGwHaEK?w=321&h=180&c=7&r=0&o=5&pid=1.7')
+      setName('')
+
+    }).catch(function (error) {
+      console.error(error);
+    });
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={<Ionicons size={310} name="code-slash" style={styles.headerImage} />}>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText> library
-          to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <View style={styles.viewContainer}>
+      <Text style={styles.viewText}>Adicionar novo pokemon</Text>
+      <View style={styles.container}>
+        <Pressable onPress={uploadFileOnPressHandler}>
+          <Image
+            style={styles.image}
+            source={{ uri: image }}
+            id='imageCadastrar'
+          />
+        </Pressable>
+        <TextInput style={styles.nameText} value={name} onChangeText={setName} placeholder='Nome do pokemon' />
+        <View style={styles.types}>
+          <ThemedText>Tipos:</ThemedText>
+          <View>
+            <SectionedMultiSelect
+              items={types}
+              IconRenderer={Icon}
+              uniqueKey="id"
+              onSelectedItemsChange={setSelectedItems}
+              selectedItems={selectedItems}
+            />
+          </View>
+        </View>
+      </View>
+      <Pressable onPress={adicionarPokemon} style={styles.button}>
+        <Text>Adicionar</Text>
+      </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  viewContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+    gap: 20
   },
-  titleContainer: {
+  button: {
+    width: '50%',
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    borderStyle: 'solid',
+    borderWidth: 1,
+    fontSize: 18,
+    fontWeight: 600,
+    backgroundColor: '#bbb'
+  },
+  viewText: {
+    fontSize: 25,
+    fontWeight: 700
+  },
+  container: {
+    borderStyle: 'solid',
+    borderWidth: 1.5,
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: '#bbb',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+    gap: 8
+  },
+  types: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 4,
+    width: 140,
+    flexWrap: 'wrap'
   },
-});
+  nameText: {
+    fontSize: 18,
+    fontWeight: 600
+  },
+  image: {
+    width: 140,
+    height: 140,
+    borderRadius: 4,
+    objectFit: 'cover',
+    borderStyle: 'solid',
+    borderWidth: .5,
+
+  }
+})

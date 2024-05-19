@@ -9,6 +9,7 @@ import PokemonCard from '@/components/PokemonCard';
 import axios from 'axios'
 
 type pokemonType = {
+  id: number,
   name: string,
   image: string,
   type: string[]
